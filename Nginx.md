@@ -133,9 +133,9 @@ http {
 
 
 
-配置指定域名(www.duyi123.com)，访问到虚拟机上的页面
+配置指定域名(www.bigdata.com)，访问到虚拟机上的页面
 
-1）在安装目录下，创建文件夹，如: mkdir duyi123
+1）在安装目录下，创建文件夹，如: mkdir bigdata
 2)   创建页面， index.html
 3)   更改配置
 
@@ -146,11 +146,11 @@ http {
        # 监听端口
        listen       80;
        # 监听域名
-       server_name  duyi123.com;
+       server_name  bigdata.com;
        # 定位出路径或文件地址
        location / {
              # 相对路径
-       		 root   duyi123;
+       		 root   bigdata;
        		 # 默认跳转的首页地址
              index  index.html;
        }
@@ -162,7 +162,7 @@ http {
 4)  给域名配置ip地址的映射
       更改hosts文件  （C:\Windows\System32\drivers\etc）
 
-5）浏览器输入虚拟机地址或者域名  duyi123.com ，均能返回自定义页面
+5）浏览器输入虚拟机地址或者域名  bigdata.com ，均能返回自定义页面
 
 
 
@@ -221,14 +221,14 @@ http {
 
 
 
-**原需求**： 访问域名duyi123.com     显示 nginx路径/duyi123/index.html页面
-**现需求**： 访问域名duyi123.com     显示 tomcat 首页
+**原需求**： 访问域名bigdata.com     显示 nginx路径/bigdata/index.html页面
+**现需求**： 访问域名bigdata.com     显示 tomcat 首页
 
 实现方式
 
 ```
         location / {
-            #root   duyi123;
+            #root   bigdata;
             proxy_pass  http://127.0.0.1:8080;
             #index  index.html;
         }
@@ -250,7 +250,7 @@ d)  修改nginx配置文件并重加载
 
 ```
         location ~ /tomcat1/ {
-            #root   duyi123;
+            #root   bigdata;
             proxy_pass  http://127.0.0.1:8080;
             #index  index.html;
         }
@@ -261,7 +261,7 @@ d)  修改nginx配置文件并重加载
 
 ```
 
-e) 浏览器验证，访问  http://duyi123.com/tomcat1/index.html  和 http://duyi123.com/tomcat2/index.html，均能找到对应页面。
+e) 浏览器验证，访问  http://bigdata.com/tomcat1/index.html  和 http://bigdata.com/tomcat2/index.html，均能找到对应页面。
 
 最终实现通过不同的路径，映射到不同的tomcat目录下
 
