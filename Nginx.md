@@ -429,7 +429,7 @@ location ^~ /helloworld {
 #两种前缀匹配不能同时出现  否则启动会报错
 ```
 
-访问  duyi123.com/helloworld/test    -》  返回601
+bigdata.com/helloworld/test    -》  返回601
 
 
 
@@ -450,7 +450,7 @@ location ~ /helloworld {
 }
 ```
 
-访问  duyi123.com/helloworld/test    -》  返回603
+访问  bigdata.com/helloworld/test    -》  返回603
 
 
 
@@ -476,7 +476,7 @@ location ~ /helloworld/test {
 }
 ```
 
-访问  duyi123.com/helloworld/test/a.html    -》  返回603
+访问  bigdata.com/helloworld/test/a.html    -》  返回603
 
 
 
@@ -501,7 +501,7 @@ location ~ /helloworld {
 }
 ```
 
-访问  duyi123.com/helloworld/test/a.html    -》  返回604
+访问  bigdata.com/helloworld/test/a.html    -》  返回604
 
 
 
@@ -512,10 +512,10 @@ location ~ /helloworld {
 ```
 server{
     listen 80;
-    server_name duyi123.com;
-    rewrite ^/(.*) http://www.duyi123.com/$1 permanent;
+    server_name bigdata.com;
+    rewrite ^/(.*) http://www.bigdata.com/$1 permanent;
 }
-# 访问 duyi123.com   地址栏会变成www.duyi123.com
+# 访问 bigdata.com   地址栏会变成www.bigdata.com
 ```
 
 
@@ -538,15 +538,13 @@ server{
 4)  安装nginx过程中  执行配置检查
 
     ```
-./configure --sbin-path=/usr/local/nginx/nginx \
---conf-path=/usr/local/nginx/nginx.conf \
---pid-path=/usr/local/nginx/nginx.pid \
---with-http_ssl_module \
---with-pcre=/usr/local/src/pcre-8.44 \
---with-zlib=/usr/local/src/zlib-1.2.11 \
---with-openssl=/usr/local/src/openssl-1.1.1d
-    ```
-
+    ./configure --sbin-path=/usr/local/nginx/nginx \
+    --conf-path=/usr/local/nginx/nginx.conf \
+    --pid-path=/usr/local/nginx/nginx.pid \
+    --with-http_ssl_module \
+    --with-pcre=/usr/local/src/pcre-8.44 \
+    --with-zlib=/usr/local/src/zlib-1.2.11 \
+    --with-openssl=/usr/local/src/openssl-1.1.1d
 5)  仍然执行 make  以及  make install  
 6)  nginx安装成功   ./nginx验证
 
