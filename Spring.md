@@ -317,6 +317,88 @@ Spring：创建、管理对象
   - 操作对象方法：#{beanID.方法名()}
   - 引入java中的类并执行方法或调用属性：#{2 * T(java.lang.Math).PI}
 
+## 工厂
+
+- 静态工厂：不需要实例化工厂就执行工厂的静态方法创建需要的对象
+
+  ```java
+  public class Factory {
+      private static Map<String,Car> carMap = new HashMap<>();
+      static {
+          carMap.put("奔驰",new Car("奔驰"));
+          carMap.put("宝马",new Car("宝马"));
+      }
+  
+      public static Car getCar(String name){
+          return carMap.get(name);
+      }
+  }
+  ```
+
+  ```xml
+  <bean id="staticCar" class="com.just.Factory" factory-method="getCar">
+    <constructor-arg value="baoma" type="java.lang.String"></constructor-arg>
+  </bean>
+  ```
+
+- 实例工厂：需要实例化工厂后执行工厂方法创建需要的对象
+
+  ```java
+  public class Factory {
+      private Map<String,Car> carMap = new HashMap<>();
+      {
+          carMap.put("奔驰",new Car("奔驰"));
+          carMap.put("宝马",new Car("宝马"));
+      }
+  
+      public Car getCar(String name){
+          return carMap.get(name);
+      }
+  }
+  ```
+
+  ```xml
+  <bean id="factory" class="com.just.Factory"></bean>
+  <bean id="dynamicCar" factory-bean="factory" factory-method="getCar">
+    <constructor-arg value="baoma" type="java.lang.String"></constructor-arg>
+  </bean>
+  ```
+
+- Spring中自定义工厂(静态工厂)
+
+  ```java
+  public class Factory implements FactoryBean<Car> {
+      private String brand;
+  
+      @Override
+      public Car getObject() throws Exception {
+          return  new Car(brand);
+      }
+  
+      @Override
+      public Class<?> getObjectType() {
+          return Car.class;
+      }
+  
+      @Override
+      public boolean isSingleton() {
+          return false;
+      }
+  
+      public void setBrand(String brand) {
+          this.brand = brand;
+      }
+  }
+  ```
+
+  ```xml
+  <bean id="beanCar" class="com.just.Factory">
+    <property name="brand" value="baoma"></property>
+  </bean>
+  ```
+
+  自定义一个类实现FactoryBean接口，重写接口中的方法，spring发现实现了该接口，默认调用getObject方法()创建对象。
+
 ## AOP(Aspect Oriented Programming)
 
 ## 注解

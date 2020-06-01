@@ -1,5 +1,3 @@
-# Redis学习笔记
-
 ## Part 1  Mysql VS Nosql
 
 时间戳   当前距离1970年1月1日8时0分0秒   的总秒数    计算机纪元
@@ -7,8 +5,6 @@
 1971年   贝尔实验室的程序员 发明了unix系统和c语言 (jvm底层语言)
 计算机都是32位的    时间跨度支持68年上下      1901—2038年范围内
 随着64位系统的诞生   问题就解决了    2900多亿年
-
-
 
 关系型数据库    E-R模型 (公司成员系统)
 
@@ -26,8 +22,6 @@
 | name       | varchar(255) | 名字 |
 | department | varchar      | 部门 |
 | title      | varchar      | 职位 |
-
-
 
 非关系型数据库 (json类型)
 
@@ -76,7 +70,7 @@ RDS:  Relational  Database  Service 关系型数据服务
 
 4） get key1   返回“hello world” ,说明数据可以正常的存取。
 
-5） exit  退出当前的连接
+5） exit  退出当前的连接。
 
 6） shutdown  关闭当前的服务  然后再执行一次exit完全退出
 
@@ -154,7 +148,7 @@ RDS:  Relational  Database  Service 关系型数据服务
 
 
 
-## Part 3  Redis数据类型
+## Part 3  Redis数据结构
 
 #### **一、String（字符串）**
 
@@ -198,12 +192,10 @@ RDS:  Relational  Database  Service 关系型数据服务
 
 redis的字符串是动态字符串，内部结构类似ArrayList。采用预分配冗余空间的方式减少内存的频繁分配。内部为字符串分配的实际空间一般高于字符串长度，当字符串长度<1MB时，扩容方式是直接加倍，如果>1MB，一次扩容只扩1MB，直到扩大到512MB。
 
-
-
 #### **二、list（列表）**
 
 栈和队列   -》  “数据结构”
-栈： 像生活中的口袋一样，后进先出。  push 压栈   pop 弹出
+栈： 像生活中的口袋一样，后进后出。  push 压栈   pop 弹出
 队列：像生活中的排队一样，先进先出。
 
 1 命令：
@@ -226,8 +218,6 @@ redis的字符串是动态字符串，内部结构类似ArrayList。采用预分
                     同理，如果要插入数据到尾部，可以使用 rpushx, 使用方式同上。
            lset   可以更改指定位置的值   使用方式： lset key  index  value
 
-
-
 #### **三、Hash（哈希）**
 
 HashMap<String,String>  ==》  string
@@ -248,7 +238,7 @@ HashMap<String,Set<Double,String>>  ==》 ZSet
              hmset/hmget  批量处理更便捷
          ![image-20191230170000120](images/image-20191230170000120.png)
 
-​      
+​     
 
 ​    2） 遍历数据
 ​              hkeys  查看所有的key值
@@ -260,8 +250,6 @@ HashMap<String,Set<Double,String>>  ==》 ZSet
 ​     3） 变更数据
 ​               hdel   删除数据  ， 使用方式 hdel  key   field_key
 ​               hincrby   对整数的增加操作,指定增加的范围   使用方式 hincrby  key  field_key  num               
-
-
 
 #### **四、set（集合）**
 
@@ -300,8 +288,6 @@ java的集合中有list/set/map
 
 拓展问题： 在java的set中，如何求交集、差集、并集？
                                         方法： retainAll()、removeAll()、addAll()  
-
-
 
 #### 五、ZSet（有序集合）
 
@@ -346,14 +332,13 @@ java的集合中有list/set/map
 
 ![image-20191230212304275](images/image-20191230212304275.png)
 
-
 ​    5）georadius  以某个经纬度的位置为中心，划一个指定距离的半径，返回集合中满足条件的地址。   这就是“附近的XXX”的一种实现方式。
 ​            使用方式：  georadius  + key  + 中心的经度 + 中心的纬度  +  半径的距离  + 半径的单位
 ​            可选参数：  withdist  返回距离； withcoord 返回经纬度 ；  withhash  返回哈希编码；
 
 ![image-20191230214102625](images/image-20191230214102625.png)
 
-
+​    6）georadiusbymember  根据给定地理位置获取指定范围内的地址位置集合
 
 #### **七、bitmap(位图)**
 
@@ -377,8 +362,12 @@ java的集合中有list/set/map
 命令
 
 ​    1)  基础命令
-​           pfadd  增加数据 
-​           pfcount    统计数据 (去重)
+
+​		pfadd  增加数据 
+
+​		pfcount    统计数据 (去重)
+
+​		pfmerge   将多个HyperLogLog合并为一个，并去重
 
 ![image-20191230225149489](images/image-20191230225149489.png)
 
@@ -422,41 +411,18 @@ java的集合中有list/set/map
 
 ![image-20191230235521287](images/image-20191230235521287.png)
 
-
-
 ## part 4   Redis配置文件
-
--  linux命令
-
-1 cd： 更改目录
-    cd ~  回到初始目录
-    cd ..   回到上级目录
-2  mkdir  创建目录   eg: mkdir myredis
-3  cp   拷贝文件
-    eg:  cp redis-5.0.6/redis.conf myredis/
-4  ll  查看目录内的文件
-**5  vim  文本编辑器**
-    两种模式： 命令模式 、 编辑模式
-    打开文件时，默认是命令模式，可以查看文件的内容。
-    输入i（insert），可以切换为编辑模式，此时才可以更改文件。
-    按ESC，可以从编辑模式再切换为命令模式 (此时才可以退出)。
-
-​    退出方式，输入 : q （如果文件被修改，会提醒未保存）
-​            不保存，输入 : q!
-​             保存，输入 : wq    
-
-
 
 #### redis.conf
 
 1 单位的问题： 1k / 1kb / 1m / 1mb / 1g / 1gb 是不同的，没有b的时候取整。
            单位的大小写是不敏感的 1GB=1gB=1Gb
 
-#####     **网络相关**
+####     网络相关
 
 2 bind 127.0.0.1   绑定ip地址(能够访问服务端的地址)
             当前的redis服务只能被本机访问
-3 protect-mode  yes  开启保护模式
+3 protected-mode  yes  开启保护模式
             当bind没有配置且登录不需要密码时，启动保护模式（只能被本地访问）
 4 port 6379  端口号
 
@@ -466,7 +432,7 @@ java的集合中有list/set/map
 
 7 tcp-backlog  511   队列数量(未完成握手和已完成握手的)    
 
-#####     通用相关
+####     **通用相关**
 
 8 daemonize no  后台运行开关
              改为yes后，重启redis验证。
@@ -480,38 +446,183 @@ java的集合中有list/set/map
 
 12 databases 16   初始化数据库是16个
 
+#### 安全和限制
 
+config命令是一种从客户端查看配置项信息的方式，使用config  get，属于危险命令，可以限制使用。
 
-- 安全和限制
-
-  config命令是一种从客户端查看配置项信息的方式，使用config  get
-  属于危险命令，可以限制使用。
-
-  **安全校验配置**    requirepass  代表是否设置密码
+- **安全校验配置**    requirepass  代表是否设置密码
        如果需要设置密码    config set requirepass  + \<password>
        此时输入命令前，需要先校验    anth + \<password>   然后才能执行其他操作
        恢复初始状态，只需要重新设置为空串 
 
   ![image-20191231153304251](images/image-20191231153304251.png)
 
-  
-
-  **危险命令限制**     
+- **危险命令限制**     
        包含 config / flushdb / flushall /  keys
         rename-command  +  命令 + “”  将此命令置为不可用
 
-  **其他限制**
-        maxclients 10000   客户端并发数的限制
-        maxmemory   最大内存
-        maxmemory-policy   缓存淘汰策略
-             默认值 noeviction （不删除只报错）
-             其他策略主要分为两种情况    
-                 allkeys（所有的键值都可能删除）   volatile（只删除设置了过期时间的键值） 
-                 
+#### 缓存淘汰策略
+
+有效期叫做TTL(time to live)，作用是为了节省空间和有效期失效后保证数据的一致性
+
+过期/淘汰策略：当内存使用达到最大值时，需要使用某种算法来清除掉某些数据，以保证新数据的写入。
+
+- **常见淘汰策略3种：**
+  - FIFO（First in First out）：先进先出，判断被存储的时间，离目前最远的数据优先被淘汰
+  - LRU（Least Recently Used）：最近最少使用(时间)，判断最近被使用的时间，离目前最远的数据优先淘汰
+  - LFU（Least Frequently Used）：最不经常使用(次数)，在一段时间内数据被使用最少的，优先被淘汰
+
+- **redis缓存清除策略(maxmemory-policy)6种：**volatile(不稳定的)，代表会过期的数据，等价于设置了expire的数据
+
+  - noeviction：不删除策略, 达到最大内存限制时, 如果需要更多内存, 直接返回错误信息。 大多数写 命令都会导致占用更多的内存(有极少数会例外, 如 DEL ）
+  - allkeys-lru：所有key通用; 优先删除最近最少使用(less recently used ,LRU) 的 key
+  - volatile-lru：优先删除最近最少使用(less recently used ,LRU) 的 key(限于会过期的key)
+  - allkeys-random：所有key通用; 随机删除一部分 key
+  - volatile-random：随机删除一部分 key(限于会过期的key)
+  - volatile-ttl：优先删除剩余时间(time to live,TTL) 短的key(限于会过期的key)
+
+- **近似LRU算法**：因为LRU算法需要消耗大量内存，所有采用近似LRU算法，并且是懒处理
+
+  - 算法原理
+
+    首先给每个key增加一个额外24bit的字段，记录最后被访问时间戳，然后当内存超出maxmemory时，通过maxmemory-samples设置采样出指定个数，采样范围取决于maxmemory-policy配置是volatile还是allkeys，淘汰掉旧的key。
+
+  - 算法分析
+
+    采样范围越大，越接近严格LRU，Redis3.0中增加了淘汰池，进一步提升了效果。
+
+    淘汰池是一个大小为maxmemory_samples的数组，每一次淘汰循环中，新随机出的key会和淘汰池 中的key列表融合，淘汰掉最旧的key，剩余较旧的key列表放在淘汰池中等待下一次循环。
 
 ## part 5  Redis持久化
 
+#### 定义
+
+将数据(如内存中的对象)保存到可以永久保存的存储设备中。
+
+#### 持久化方式
+
+##### RDB(Redis DataBase)
+
+- 释义：在指定的时间间隔内对数据进行快照存储。先将所有数据写入一个临时文件，写入成功后，用该文件替换原来的备份文件，用二进制压缩存储，是一次全量的备份。
+
+- 触发方式
+
+  - 命令触发
+    - save：会阻塞当前redis服务器，直到持久化完成，线上应禁止使用
+    - bgsave：会fork一个子进程，有子进程负责持久化，因此阻塞只会发生在fork子进程的时候。
+  - 自动触发
+    - 根据我们的 save m n 配置规则自动触发
+    - 从节点全量复制时，主节点发送rdb文件给从节点完成复制操作，主节点会触发 bgsave
+    - 执行 debug reload(保存并清空数据，重新加载rdb文件) 时
+    - 执行 shutdown时，如果没有开启aof，也会触发
+
+- 恢复方式：将备份文件(dump.rdb)移动到redis安装目录并启动服务即可
+
+- 在redis.conf中的配置
+
+  <img src="/Users/admin/Documents/study/images/image-20200601162909508.png" alt="image-20200601162909508" style="zoom:50%;" />
+
+- Fork原理
+
+  <img src="/Users/admin/Documents/study/images/image-20200601162959327.png" alt="image-20200601162959327" style="zoom:50%;" />
+
+  1. redis调用系统函数fork() ，创建一个子进程
+  2. 子进程将数据集写入到一个临时 RDB 文件中
+
+  3. 当子进程完成对临时RDB文件的写入时，redis 用新的临时RDB 文件替换原来的RDB 文件，并删 除旧 RDB 文件。
+
+  4. 执行fork时，操作系统会使用写时复制(copy- on-write)策略，即fork函数发生的一刻父子进 程共享同一内存数据，当父进程要更改其中某片数 据时(如执行一个写命令 )，操作系统会将该片 数据复制一份以保证子进程的数据不受影响。**新的 RDB文件存储的是执行fork那一刻的内存数据。**
+
+  5. 在进行快照的过程中不会修改RDB文件，只有快 照结束后才会将旧的文件替换成新的。**任何时候 RDB文件都是完整的。**
+
+- RDB性能分析
+
+  - 优点
+    - 通过rdb文件恢复数据比较快
+    - rdb文件非常紧凑，适合于数据备份
+    - 通过RDB进行数据备份，由于使用 子进程生成，所以对Redis服务器性 能影响较小
+  - 缺点
+    - 采用RDB的方式可能会造成某个时段内数据的丢失，比如还没达到触发条件时服务器死机了，那么这个时间段的数据会丢失
+    - 使用save命令会造成服务器阻塞，直接数据同步完成才能接收后 续请求
+    - 使用bgsave命令在forks子进程时，如果数据量太大，forks的过 程也会发生阻塞，另外，forks子进程会耗费内存
+
+##### AOF(Append Only File)
+
+- 释义：以日志文本的形式记录服务器所处理的每一个数据更改指令，然后通过重放来恢复数据，是连续的增量备份。
+
+  - 注意：如果更新操作过多，aof文件过大，加载文件恢复数据会非常慢，为解决这个问题，redis支持aof文件重写，通过重写aof，可以生成一个恢复当前数据的最少命令集。
+
+  - 整体流程：一是命令实时写入，二是对aof文件重写
+  - 命令写入流程：命令输入=>追加到aof_buf =>同步到aof磁盘 (考虑到磁盘IO心性能增加了缓冲)
+
+- 触发方式：
+
+  注入：在写入aof文件时，如果redis服务宕机，则日志文件可能出现格式错误，重启服务时，服务器会拒绝载入这个aof文件，可以通过命令：redis-check-aof --fix file.aof 修复。
+
+  - 手动触发：执行命令bgrewriteaof
+  - 根据配置规则来触发 (整体时间还跟Redis的定时任务频率有关系)
+
+- 恢复方式：重启redis服务即可
+
+- 在redis.conf中的配置
+
+  <img src="/Users/admin/Documents/study/images/image-20200601165756508.png" alt="image-20200601165756508" style="zoom:50%;" />
+
+- AOF原理
+
+  <img src="/Users/admin/Documents/study/images/image-20200601165834301.png" alt="image-20200601165834301" style="zoom:50%;" />
+
+  1. 在重写期间，由于主进程依然在响应命令， 为了保证最终备份的完整性;因此它依然 会写入旧的AOF file中，如果重写失败， 能够保证数据不丢失。
+  2. 为了把重写期间响应的写入信息也写入到 新的文件中，因此也会为子进程保留一个 buf，防止新写的file丢失数据。
+  3. 重写是直接把当前内存的数据生成对应命 令，并不需要读取老的AOF文件进行分析、 命令合并。
+  4. AOF文件直接采用的文本协议，主要是兼 容性好、追加方便、可读性高可认为修改 修复。
+
+- AOF性能分析
+
+  - 优点
+    - AOF只是追加日志文件，因此对服务器性能影响较小，速度比RDB快，消耗内存小
+    - 数据安全性较高
+  - 缺点
+    - AOF方式生成的日志文件太大，即使通过AFO重写，文件体积仍然很大
+    - 恢复数据的速度比RDB慢
+
+**注意**：
+
+1. 当RDB与AOF两种方式都开启时，Redis启动时会优先使用AOF日志来 恢复数据，因为AOF保存的文件比RDB文件更完整
+2. Redis4.0+提供了一个混合持久化的选择，将rdb文件的内容和增量的aof 日志存在一起，重启时先加载rdb，再重放aof，以达到最大效率。
+
 ## part 6  Redis管道与事务
+
+#### 管道
+
+- 管道技术是客户端提供的，与服务器无关；服务器始终使用：收到-执行-回复   的顺序处理消息，而客户端通过对管道中的指令列表改变读写顺序，而大幅节省IO时间，指令越多，效果越好，可以将多个命令打包一次性发送给服务端处理。
+
+- 管道测试：redis-benchmark (-P)
+
+#### 事务
+
+- 一个成熟的数据库一定会支持事务，以保障多个操作的原子性。同时事务还能保证一个事务中的命令依次执行而不被其他命令插入
+
+- redis事务指令：multi(开启事务)、exec(执行命令)、discard(取消事务)；
+
+  注意：虽然可以使用discard取消事务，但是不支持回滚。
+
+- redis事务执行流程：输入multi命令，服务器返回ok开启事务；依次输入执行命令，每个命令服务器返回queued，表示命令被服务器接收并暂时保存起来，输入exec命令，事务中所有命令才执行
+
+注意：
+
+- 语法错误，所有命令不执行。
+- 运行错误，后面的命令继续执行。
+
+#### 事务监测
+
+
+
+## part 7 redis分布式锁
+
+
+
+## part 8 redis集群配置
 
 edward -> atuo     1角钱
 
