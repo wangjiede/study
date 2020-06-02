@@ -286,7 +286,7 @@ User user = session.load(User.class,1);
 
 - 保存时的主键生成机制
 
-  在orm配置文件中，使用id的子标签<generator>指定生成方式
+  在orm配置文件中，使用id的子标签\<generator>指定生成方式
 
   ```xml
   <id name="uid" column="uid">
@@ -524,7 +524,7 @@ session并没有提供直接查询多条记录的方法，但提供了间接查�
   1. 创建CriteriaBuilder对象，构建查询模式
 
      ```java
-     CriteriaBuilder builder = session.createCriteriaBuilder();
+     CriteriaBuilder builder = session.getCriteriaBuilder();
      ```
 
   2. 获得查询对象CriteriaQuery
