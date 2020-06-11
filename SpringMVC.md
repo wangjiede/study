@@ -868,10 +868,12 @@ org.springframework.web.HttpSessionRequiredException:Session attribute 'user' re
 
     - Boolean canRead(Class<?> clazz,MediaType mediaType)：指定转换器可以读取的对象类型，既转换器是否将请求信息转换为clazz类型的对象，同时指定支持MIME类型(text/html,application/json等)
   - Boolean canWrite(Class<?> clazz,MediaType mediaType)：指定转换器是否可以将clazz类型的对象写到响应流中，响应流支持的类型在MediaType中定义。
+    
     - LIst\<MediaType> getSupportMediaTypes()􏰄：该转换器致辞的媒体类型
   - T read(Class<? extends T> clazz, HttpInputMessage inputMessage)：将请求信息流转换为T类型对象
-    - void write(T t, @Nullable MediaType contentType, HttpOutputMessage outputMessage)：将T类型对象写到响应流中，同时指定响应的媒体类型为contentType。
-
+  
+  - void write(T t, @Nullable MediaType contentType, HttpOutputMessage outputMessage)：将T类型对象写到响应流中，同时指定响应的媒体类型为contentType。
+  
   - 流程：
 
     <img src="/Users/admin/Documents/study/images/image-20200608210529115.png" alt="image-20200608210529115" style="zoom:40%;" />
@@ -891,8 +893,8 @@ org.springframework.web.HttpSessionRequiredException:Session attribute 'user' re
   - 使用
 
     - 使用HttpMessageConverter\<T>将请求信息或响应结果转化为对应类型的入参或响应信息，提供2种途径
-
-      - @RequestBody / @ResponseBody：对处理方法进行标注
+  
+    - @RequestBody / @ResponseBody：对处理方法进行标注
       - HttpEntity \<T> / ResponseEntity \<T> ：作为处理方法的入参或返回值
 
     - 当处理方法使用到@RequestBody / @ResponseBody或HttpEntity \<T> / ResponseEntity \<T>时，Spring首先根据请求头或响应头的Accept属性选择匹配的HttpMessageConverter，进而根据参数类型或泛型类型的过滤得到相应的HttpMessageConverter，若找不到匹配的HttpMessageConverter将报错。
@@ -902,7 +904,7 @@ org.springframework.web.HttpSessionRequiredException:Session attribute 'user' re
       <img src="/Users/admin/Documents/study/images/image-20200608212519231.png" alt="image-20200608212519231" style="zoom:40%;" />
 
     - HttpEntity􏰳、ResponseEntity示例：
-
+  
       <img src="/Users/admin/Documents/study/images/image-20200608212632852.png" alt="image-20200608212632852" style="zoom:40%;" />
 
 ## 国际化
@@ -991,11 +993,63 @@ SessionLocaleResolver&LocaleChangeInterceptor
 
 ## 拦截器
 
+- SpringMVC可以使用拦截器对请求进行拦截，用户可以自定义拦截器来实现特定的功能，自定义的拦截器必须实现HandlerInterceptor接口，接口中的方法：
+  - preHandle()：该方法在控制器方法执行之前调用，如果还需要执行处理方法或者还要调用其他拦截器则需要返回true，否则返回fasle；
+  - postHandle()：该方法在控制器方法执行之后，DispatcherServlet向客户端响应前被调用。
+  - afterCompletion()：该方法在DispatcherServlet完成处理请求后被调用，可以在该方法中进行一些资源清理的操作。
+
+- 拦截器方法执行流程：
+
+  ![image-20200610174518996](/Users/admin/Documents/study/images/image-20200610174518996.png)
+
+- 配置自定义拦截器
+
+  ```xml
+  <mvc:interceptors>
+    <!-- 配置自定义的拦截器 对所有路径生效-->
+    <bean class="com.springmvc.interceptors.HelloInterceptor"></bean>
+  
+    <!-- 配置拦截器(不)作用的路径 -->
+    <mvc:interceptor>
+      <mvc:mapping path="/emps"/>
+      <bean class="com.springmvc.interceptors.HelloInterceptor"></bean>
+    </mvc:interceptor>
+  </mvc:interceptors>
+  ```
+
 ## 异常处理
+
+SpringMVC通过HandlerExceptionResolver处理程序的异常，包括Controller映射、数据绑定以及目标目标方法执行时发生的异常。
+
+- ExceptionHandlerExceptionResolver：主要处理Controller中用@ExceptionHandler标注的方法。
+
+  - @ExceptionHandler注解有优先级问题：即查找最精确的那个错误类型。
+  - ExceptionHandlerMethodResolver若找不到@ExceptionHandler注解，会找@ControllerAdvice注解标注内中的@ExceptionHandler注解标注的方法
+
+- ResponseStatusExceptionResolver：主要处理使用@ResponseStatus注解，可以定义返回状态及描述
+
+- DefaultHandlerExceptionResolver：对一些特定异常进行处理，具体可以看类源码。
+
+- SimpleMappingExceptionResolver：可以将异常统一处理，并将异常类名映射为视图名，如：
+
+  ```xml
+  <!--将java.lang.ArithmeticException该错误映射到error页面-->
+  <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+    <property name="exceptionMappings">
+      <props>
+        <prop key="java.lang.ArithmeticException">error</prop>
+      </props>
+    </property>
+  </bean>
+  ```
 
 ## 运行流程
 
-## Spring+SpringMVC
+<img src="/Users/admin/Documents/study/images/image-20200610183303375.png" alt="image-20200610183303375" style="zoom:50%;" />
 
 ## 对比Struts2
 
+- SpringMVC的入口是Servlet，而Struts2是Filter
+- SpringMVC效率比Struts2高，SpringMVC是基于方法设计，而Struts2是基于类，每发一次请求都会实例化一个类。
+- SpringMVC使用更加简洁，开发效率比Struts2高，支持JSR303等。
+- Struts2的OGNL表达式使页面的开发效率相比SpringMVC要高。

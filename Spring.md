@@ -134,7 +134,7 @@ Spring：创建、管理对象
 
 将对象中的对象类型的属性自动赋值，使用autowire
 
-- 构造方法注入
+- 构造方法注入(使用少)
 
   ```xml
   <bean name="controller" class="controller.StudentController" autowire="constructor"></bean>
