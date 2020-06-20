@@ -1,13 +1,15 @@
+# Spring基础使用
+
 ## Spring概述
 
-Spring 是一个开源框架，为简化企业级应用开发而生，是一个 IOC(DI) 和 AOP 容器框架，具体描述：
+Spring是一个开源框架，为简化企业级应用开发而生，是一个 IOC(DI) 和 AOP 容器框架，具体描述：
 
 - 轻量级：Spring 是非侵入性的 - 基于 Spring 开发的应用中的对象可以不依赖于 Spring 的 API
 - 依赖注入(DI --- dependency injection、IOC)
 - 面向切面编程(AOP --- aspect oriented programming)
 - 容器： Spring 是一个容器, 因为它包含并且管理应用对象的生命周期
 - 框架: Spring 实现了使用简单的组件配置组合成一个复杂的应用. 在 Spring 中可以使用 XML 和 Java 注解组合这些对象
-- 一站式：在 IOC 和 AOP 的基础上可以整合各种企业应用的开源框架和优秀的第三方类库 （实际上 Spring 自身也提供了展现层的 SpringMVC 和 持久层的 Spring JDBC）
+- 一站式：在 IOC 和 AOP 的基础上可以整合各种企业应用的开源框架和优秀的第三方类库 （实际上 Spring 自身也提供了展现层的 SpringMVC 和 持久层的 Spring JDBC)
 
 ## IOC&DI概述
 
@@ -417,3 +419,585 @@ XML中Id值说明：在 IOC 容器中必须是唯一的，若 id 没有指定，
   - @Inject：和@Autowired 注解一样也是按类型匹配注入的 Bean， 但没有 reqired 属性
 
 ## AOP
+
+- 纵向切面：通过继承、或者方法内部执行相同的逻辑，有缺点：
+  - 代码混乱：与原有业务不相关代码无关。
+  - 代码分散：为了满足单一需求，在多个模块(方法)里面多次重复相同代码，如果需求发生变化，所有地方都需要改动。
+
+- 横向切面：在不原有业务逻辑的情况下，从侧面切入，执行其他功能代码，可以使用动态代理方式解决。
+
+### 简介
+
+- AOP(Aspect-Oriented Programming, 面向切面编程): 是一种新的方法论, 是对传统 OOP(Object-Oriented Programming, 面向对象编程) 的补充
+- AOP 的主要编程对象是切面(aspect), 而切面模块化横切关注点
+- 优点
+  - 每个事物逻辑位于一个位置, 代码不分散, 便于维护和升级
+  - 业务模块更简洁, 只包含核心业务代码
+
+### 术语
+
+- 切面(Aspect):  横切关注点(跨越应用程序多个模块的功能)被模块化的特殊对象
+- 通知(Advice):  切面必须要完成的工作，通知类型如下：
+  - Before：前置通知, 在方法执行之前执行
+  - After：后置通知, 在方法执行之后执行(获取不到方法返回值)
+  - AfterRunning：返回通知, 在方法返回结果之后执行(可以获取方法返回结果)
+  - AfterThrowing：异常通知, 在方法抛出异常之后
+  - Around：环绕通知, 围绕着方法执行
+- 目标(Target): 被通知的对象
+- 代理(Proxy): 向目标对象应用通知之后创建的对象
+- 连接点（Joinpoint）：程序执行的某个特定位置
+- 切点（pointcut）：每个类都拥有多个连接点
+
+### 使用AspectJ
+
+#### 注解方式
+
+- 启用注解支持：在Spring配置文件中配置：\<aop:aspectj-autoproxy>，作用自动为与 AspectJ 切面匹配的 Bean 创建代理
+
+- 使用@AspectJ注解声明切面，前提是当前类被Spring管理，如：
+
+  ```java
+  @Aspect
+  @Component
+  public class LoggingAspect {}
+  ```
+
+- 声明方法配置切入点表达式,可以通过操作符 &&, ||, ! 结合起来，如：
+
+  ```java
+  @Pointcut("execution(public int com.atguigu.spring.aop.ArithmeticCalculator.*(..)) [|| execution]")
+  public void declareJointPointExpression(){}
+  ```
+
+- 创建方法并配置通知类型，如：
+
+  - 前置通知
+
+    ```java
+    @Before("declareJointPointExpression()")
+    public void beforeMethod(JoinPoint joinPoint){
+      String methodName = joinPoint.getSignature().getName();
+      Object [] args = joinPoint.getArgs();
+      System.out.println("The method " + methodName + " begins with " + Arrays.asList(args));
+    }
+    ```
+
+  - 后置通知
+
+    ```java
+    @After("declareJointPointExpression()")
+    public void afterMethod(JoinPoint joinPoint){
+      String methodName = joinPoint.getSignature().getName();
+      System.out.println("The method " + methodName + " ends");
+    }
+    ```
+
+  - 返回通知
+
+    ```java
+    @AfterReturning(value="declareJointPointExpression()",
+                    returning="result")
+    public void afterReturning(JoinPoint joinPoint, Object result){
+      String methodName = joinPoint.getSignature().getName();
+      System.out.println("The method " + methodName + " ends with " + result);
+    }
+    ```
+
+  - 异常通知
+
+    ```java
+    @AfterThrowing(value="declareJointPointExpression()",
+                   throwing="e")
+    public void afterThrowing(JoinPoint joinPoint, Exception e){
+      String methodName = joinPoint.getSignature().getName();
+      System.out.println("The method " + methodName + " occurs excetion:" + e);
+    }
+    ```
+
+  - 环绕通知
+
+    ```java
+    @Around("execution(public int com.spring.aop.ArithmeticCalculator.*(..))")
+    public Object aroundMethod(ProceedingJoinPoint pjd){
+    
+      Object result = null;
+      String methodName = pjd.getSignature().getName();
+    
+      try {
+        //前置通知
+        System.out.println("The method " + methodName + " begins with " + Arrays.asList(pjd.getArgs()));
+        //执行目标方法
+        result = pjd.proceed();
+        //返回通知
+        System.out.println("The method " + methodName + " ends with " + result);
+      } catch (Throwable e) {
+        //异常通知
+        System.out.println("The method " + methodName + " occurs exception:" + e);
+        throw new RuntimeException(e);
+      }
+      //后置通知
+      System.out.println("The method " + methodName + " ends");
+    
+      return result;
+    }
+    ```
+
+- 指定切面顺序可以通过实现Ordered 接口的getOrder()方法或通过@Order注解，值越小越先执行，如：
+
+  ```java
+  @Order(2)
+  @Aspect
+  @Component
+  public class LoggingAspect {}
+  ```
+
+#### XML方式
+
+- 声明切面：在spring的配置文件中所有与切面相关的配置都必须在\<aop:config>内部,对于每个切面而言, 都要创建一个 \<aop:aspect> 元素来为具体的切面实现引用后端 Bean 实例,如：
+
+  ```xml
+  <aop:config>
+    <!-- 配置切面及通知 -->
+    <aop:aspect ref="loggingAspect" order="2">
+    </aop:aspect>	
+    <aop:aspect ref="vlidationAspect" order="1">
+    </aop:aspect>
+  </aop:config>
+  ```
+
+- 声明切入点：使用\<aop:pointcut> ，如：
+
+  ```xml
+  <!--
+  定义在 <aop:aspect> 元素下: 只对当前切面有效
+  定义在 <aop:config> 元素下: 对所有切面都有效
+  -->
+  <aop:pointcut expression="execution(* com.atguigu.spring.aop.xml.ArithmeticCalculator.*(int, int))" id="pointcut"/>
+  ```
+
+- 声明通知：使用 pointcut-ref来引用切入点, 或用 pointcut直接嵌入切入点表达式，method 属性指定切面类中通知方法的名称，如：
+
+  ```xml
+  <aop:aspect ref="loggingAspect" order="2">
+  			<aop:before method="beforeMethod" pointcut-ref="pointcut"/>
+  			<aop:after method="afterMethod" pointcut-ref="pointcut"/>
+  </aop:aspect>
+  ```
+
+## 事务管理
+
+### 编程式事务管理
+
+将事务管理代码嵌入到业务方法中来控制事务的提交和回滚. 在编程式管理事务时, 必须在每个事务操作中包含额外的事务管理代码
+
+### 声明式事务管理
+
+将事务管理代码从业务方法中分离出来, 以声明的方式来实现事务管理. 事务管理作为一种横切关注点, 可以通过 AOP 方法模块化. Spring 通过 Spring AOP 框架支持声明式事务管理
+
+```xml
+<!-- 1. 配置事务管理器 -->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+  <property name="dataSource" ref="dataSource"></property>
+</bean>
+
+<!-- 2. 配置事务属性 -->
+<tx:advice id="txAdvice" transaction-manager="transactionManager">
+  <tx:attributes>
+    <!-- 根据方法名指定事务的属性 -->
+    <tx:method name="purchase" propagation="REQUIRES_NEW"/>
+    <tx:method name="get*" read-only="true"/>
+    <tx:method name="find*" read-only="true"/>
+    <tx:method name="*"/>
+  </tx:attributes>
+</tx:advice>
+
+<!-- 3. 配置事务切入点, 以及把事务切入点和事务属性关联起来 -->
+<aop:config>
+  <aop:pointcut expression="execution(* com.atguigu.spring.tx.xml.service.*.*(..))" 
+                id="txPointCut"/>
+  <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointCut"/>	
+</aop:config>
+```
+
+- @Transactional ：标准需要使用事务的方法，方法必须是public修改,需要在配置文件中增加，事务处理器名称默认transactionManager，可以不写
+
+  ```xml
+  <tx:annotation-driven transaction-manager="transactionManager"/>
+  ```
+
+### Spring支持传播行为
+
+| 传播属性                  | 描述                                                         |
+| ------------------------- | ------------------------------------------------------------ |
+| Propagation.REQUIRED      | 如果有事务在运行，当前方法就在这个事务内运行，否则就自己开启一个新事务 |
+| Propagation.REQUIRES_NEW  | 当前方法必须启动新事务，并在自己创建的事务内运行，如果有事务在运行，会将它挂起 |
+| Propagation.SUPPORTS      | 如果有事务在运行，当前方法就在这个事务内运行，否则它可以不运行在事务中 |
+| Propagation.NOT_SUPPORTED | 当前方法不运行在事务中，如果有运行的事务将它挂起             |
+| Propagation.MANDATORY     | 当前方法必须运行在事务内部，如果没有正在运行的事务就，就抛出异常 |
+| Propagation.NEVER         | 当前方法不运行在事务内部，如果有正在运行的事务就，就抛出异常 |
+| Propagation.NESTED        | 如果有事务在运行，当前的方法就应该在这个事务的嵌套事务中运行，否者就启动一个新事务，并在新事务内运行。 |
+
+### 事务隔离级别
+
+- 当同一个应用程序或者不同应用程序中的多个事务在同一个数据集上并发执行时, 可能会出现许多意外的问题，分为三种类型：
+  - 脏读: 对于两个事物 T1, T2, T1  读取了已经被 T2 更新但 还没有被提交的字段。
+  - 不可重复读:对于两个事物 T1, T2, T1  读取了一个字段, 然后 T2 更新了该字段. 之后, T1再次读取同一个字段, 值就不同了
+  - 幻读:对于两个事物 T1, T2, T1  从一个表中读取了一个字段, 然后 T2 在该表中插入了一些新的行. 之后, 如果 T1 再次读取同一个表, 就会多出几行。
+
+- 事务隔离级别：事务的隔离级别要得到底层数据库引擎的支持, 而不是应用程序或者框架的支持，Oracle 支持的 2 种事务隔离级别：READ_COMMITED , SERIALIZABLE，Mysql 支持 4 中事务隔离级别
+
+  | 隔离级别        | 描述                                                         |
+  | --------------- | ------------------------------------------------------------ |
+  | DEFAULT         | 使用底层数据默认的事务隔离级别                               |
+  | SERIALIZABLE    | 确保事务可以从一个表中读取相同的行，在这个事务执行期间，禁止其他事务对表进行更新操作，所有问题都可避免，但效率十分低 |
+  | REPEATABLE_READ | 确保事务可以多次从一个字段中读取相同的值，在这个事务执行期间，禁止其他事务对该表进行更新，可以避免脏读和不可重复读，但幻读依旧存在 |
+  | READ_COMMIT     | 只允许读取已被其他事务提交的变更，可以避免脏读，但幻读和不可重复读问题依旧存在 |
+  | READ_UNCOMMIT   | 允许事务读取其他事务未被提交的数据，脏读，幻读和不可重复读问题都存在 |
+
+- 设置事务隔离级别
+
+  - @Transactional的isolation 属性指定
+  - 事务配置\<tx:method> 元素中通过isolation 属性指定
+
+- 设置事务回滚属性：默认情况RuntimeException和Error类型的异常都会回滚。
+
+  - @Transactional 注解rollbackFor 和 noRollbackFor 属性来定义，两个类型都是数组，所以可以同时指定多个类型
+    - rollbackFor：需要回滚的异常
+    - noRollbackFor：不需要回滚的异常
+  - 事务配置\<tx:method> 元素中通过rollbackFor 和 noRollbackFor属性指定，多个异常用逗号分隔
+
+- 超时和只读属性
+
+  - 由于事务可以在行和表上获得锁,  因此长事务会占用资源, 并对整体性能产生影响，需要配置超时事务属性timeout(单位秒)
+  - 如果一个事物只读取数据但不做修改, 数据库引擎可以对这个事务进行优化，需要配只读事务属性readOnly
+
+# Spring注解驱动
+
+## 组件注册
+
+- @Configuration：使用在类上，告知Spring这是一个配置类
+
+  - 创建IOC容器
+
+    ```java
+    ApplicationContext applicationContext = new AnnotationConfigApplicationContext(MainConfig.class);
+    ```
+
+- @Bean：给容器中注册一个Bean，类型为返回值的类型，id默认是用方法名作为id
+
+- @ComponentScan：配置扫描包
+
+  - value属性：指定扫描包
+
+  - excludeFilters = Filter[] ：指定扫描的时候按照什么规则排除哪些组件
+
+  - includeFilters = Filter[] ：指定扫描的时候只需要包含哪些组件
+
+  - useDefaultFilters属性：是否扫描默认包含的标注类(@Controller、@Service、@Reposiroty、@Component)
+
+  - excludeFilters注解参数@Filter：指定过滤类型及规则
+
+    - FilterType.ANNOTATION：按照注解
+
+    - FilterType.ASSIGNABLE_TYPE：按照给定的类型；
+
+    - FilterType.ASPECTJ：使用ASPECTJ表达式
+
+    - FilterType.REGEX：使用正则指定
+
+    - FilterType.CUSTOM：使用自定义规则，需要实现org.springframework.core.type.filter.TypeFilter接口，如：
+
+      ```java
+      package com.config;
+      import java.io.IOException;
+      import org.springframework.core.io.Resource;
+      import org.springframework.core.type.AnnotationMetadata;
+      import org.springframework.core.type.ClassMetadata;
+      import org.springframework.core.type.classreading.MetadataReader;
+      import org.springframework.core.type.classreading.MetadataReaderFactory;
+      import org.springframework.core.type.filter.TypeFilter;
+      
+      public class MyTypeFilter implements TypeFilter {
+          /**
+           * metadataReader：读取到的当前正在扫描的类的信息
+           * metadataReaderFactory:可以获取到其他任何类信息的
+           * 返回true表示匹配成功
+           */
+          @Override
+          public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
+                  throws IOException {
+              // TODO Auto-generated method stub
+              //获取当前类注解的信息
+              AnnotationMetadata annotationMetadata = metadataReader.getAnnotationMetadata();
+              //获取当前正在扫描的类的类信息
+              ClassMetadata classMetadata = metadataReader.getClassMetadata();
+              //获取当前类资源（类的路径）
+              Resource resource = metadataReader.getResource();
+      
+              String className = classMetadata.getClassName();
+              System.out.println("--->" + className);
+              if (className.contains("er")) {
+                  return true;
+              }
+              return false;
+          }
+      }
+      
+      ```
+
+- @Scope：配置作用域
+
+  - prototype：多实例的：ioc容器启动并不会去调用方法创建对象放在容器中，每次获取的时候才会调用方法创建对象；
+  * singleton：单实例的（默认值），ioc容器启动会调用方法创建对象放到ioc容器中
+  * request：同一次请求创建一个实例
+  * session：同一个session创建一个实例
+
+- @Lazy：懒加载
+
+- @Conditional({Condition}) ： 按照一定的条件进行判断，满足条件给容器中注册bean，如系统是linux才创建某个bean，如：
+
+  ```java
+  package com.condition;
+  
+  import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+  import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+  import org.springframework.context.annotation.Condition;
+  import org.springframework.context.annotation.ConditionContext;
+  import org.springframework.core.env.Environment;
+  import org.springframework.core.type.AnnotatedTypeMetadata;
+  
+  //判断是否linux系统
+  public class LinuxCondition implements Condition {
+      /**
+       * ConditionContext：判断条件能使用的上下文（环境）
+       * AnnotatedTypeMetadata：注释信息
+       */
+      @Override
+      public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+          // TODO是否linux系统
+          //1、能获取到ioc使用的beanfactory
+          ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+          //2、获取类加载器
+          ClassLoader classLoader = context.getClassLoader();
+          //3、获取当前环境信息
+          Environment environment = context.getEnvironment();
+          //4、获取到bean定义的注册类
+          BeanDefinitionRegistry registry = context.getRegistry();
+  
+          String property = environment.getProperty("os.name");
+  
+          //可以判断容器中的bean注册情况，也可以给容器中注册bean
+          boolean definition = registry.containsBeanDefinition("person");
+          if (property.contains("linux")) {
+              return true;
+          }
+          return false;
+      }
+  }
+  
+  @Configuration
+  public class CustomConfig{
+    @Conditional({LinuxCondition.class})
+    @Bean("linus")
+  	public Person person02(){
+  		return new Person("linus", 48);
+  	}
+  }
+  ```
+
+- @Import：快速导入，如：
+
+  ```java
+  @Configuration
+  @Import({Color.class,Red.class,MyImportSelector.class,MyImportBeanDefinitionRegistrar.class})
+  public class CustomConfig{}
+  ```
+
+  - @Import(要导入到容器中的组件)；容器中就会自动注册这个组件，id默认是全类名
+
+  - ImportSelector:返回需要导入的组件的全类名数组，如：
+
+    ```java
+    package com.condition;
+    
+    import org.springframework.context.annotation.ImportSelector;
+    import org.springframework.core.type.AnnotationMetadata;
+    
+    //自定义逻辑返回需要导入的组件
+    public class MyImportSelector implements ImportSelector {
+    
+        //返回值，就是到导入到容器中的组件全类名
+        //AnnotationMetadata:当前标注@Import注解的类的所有注解信息
+        @Override
+        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+            //方法不要返回null值
+            return new String[]{"com.bean.Blue", "com.bean.Yellow"};
+        }
+    }
+    ```
+
+  - ImportBeanDefinitionRegistrar:手动注册bean到容器中，如：
+
+    ```java
+    package com.condition;
+    
+    import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+    import org.springframework.beans.factory.support.RootBeanDefinition;
+    import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+    import org.springframework.core.type.AnnotationMetadata;
+    import com.bean.RainBow;
+    
+    public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+    	/**
+    	 * AnnotationMetadata：当前类的注解信息
+    	 * BeanDefinitionRegistry:BeanDefinition注册类；
+    	 * 		把所有需要添加到容器中的bean；调用
+    	 * 		BeanDefinitionRegistry.registerBeanDefinition手工注册进来
+    	 */
+    	@Override
+    	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+    		
+    		boolean definition = registry.containsBeanDefinition("com.atguigu.bean.Red");
+    		boolean definition2 = registry.containsBeanDefinition("com.atguigu.bean.Blue");
+    		if(definition && definition2){
+    			//指定Bean定义信息；（Bean的类型，Bean。。。）
+    			RootBeanDefinition beanDefinition = new RootBeanDefinition(RainBow.class);
+    			//注册一个Bean，指定bean名
+    			registry.registerBeanDefinition("rainBow", beanDefinition);
+    		}
+    	}
+    }
+    ```
+
+- 使用FactoryBean注册组件
+
+  - 实现org.springframework.beans.factory.FactoryBean接口，默认调用getObject()方法创建bean实例，并返回。
+  - 通过ApplicationContext获取到的默认是getObject()方法返回的对象。
+  - 要获取工厂Bean本身，我们需要给id前面加一个&，如：getBean("&colorFactoryBean");
+
+## 生命周期
+
+1. 指定初始化和销毁方法：通过@Bean指定init-method和destroy-method
+2. Bean实现接口：实现InitializingBean(定义初始化逻辑)、DisposableBean(定义销毁逻辑)
+3. 使用JSR250
+   - @PostConstruct：在bean创建完成并且属性赋值完成；来执行初始化方法
+   - @PreDestroy：在容器销毁bean之前通知我们进行清理工作
+4. bean的后置处理器：实现BeanPostProcessor接口
+   - postProcessBeforeInitialization：在初始化之前工作
+   - postProcessAfterInitialization：在初始化之后工作
+
+## 属性赋值
+
+- @PropertySource：引入外部配置文件.properties
+
+- @Value：给属性，方法入参赋值，可以使用SpEl表达式
+
+## 自动装配
+
+- @Autowired：默认按照类型到容器中匹配，如果只有一个，就注入，有多个就按照名称去匹配，默认标注属性必须装配有值。
+
+  - @Qualifier注解：一般与Autowired配合使用，指定使用什么名称到容器中匹配
+  - required属性：指定该属性是否必须被装配。
+  - @Primary注解：让Spring进行自动装配的时候，默认使用首选的bean，也可以继续使用@Qualifier指定需要装配的bean的名字
+  - 放在方法上：@Bean标注的方法，方法参数值从容器中获取，可以不写@Autowired
+  - 方法构造方法上：如果组件只有一个有参构造器，这个有参构造器的@Autowired可以省略，参数位置的组件还是可以自动从容器中获取。
+
+- java规范注解
+
+  - @Resource(JSR250)：和@Autowired一样，默认按照组件名称装配，不支持@Primary注解功能，没有required=false的功能
+  - @Inject(JSR330)：需要导入javax.inject的包，和Autowired的功能一样。没有required=false的功能
+
+- 注入Spring底层组件：当需要使用Spring底层一些组件时，可以实现xxxAware接口，在创建对象时，Spring会调用接口规定的方法，注入对应的组件，如实现ApplicationContextAware接口，Spring会调用ApplicationContextAwareProcessor注入applicationContext对象。
+
+- 根据运行环境装配：如有多数据源时，根据不同的运行环境，选择不同的数据源
+
+  - @Profile注解：指定组件在哪个环境的情况下才能被注册到容器中，不指定，任何环境下都能注册这个组件，如：
+
+    ```java
+    @PropertySource("classpath:/dbconfig.properties")
+    @Configuration
+    public class MainConfigOfProfile implements EmbeddedValueResolverAware{
+    	
+    	@Value("${db.user}")
+    	private String user;
+    	
+    	private StringValueResolver valueResolver;
+    	
+    	private String  driverClass;
+    
+    	@Bean
+    	public Yellow yellow(){
+    		return new Yellow();
+    	}
+    	
+    	@Profile("test")
+    	@Bean("testDataSource")
+    	public DataSource dataSourceTest(@Value("${db.password}")String pwd) throws Exception{
+    		ComboPooledDataSource dataSource = new ComboPooledDataSource();
+    		dataSource.setUser(user);
+    		dataSource.setPassword(pwd);
+    		dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/test");
+    		dataSource.setDriverClass(driverClass);
+    		return dataSource;
+    	}
+    	
+    	
+    	@Profile("dev")
+    	@Bean("devDataSource")
+    	public DataSource dataSourceDev(@Value("${db.password}")String pwd) throws Exception{
+    		ComboPooledDataSource dataSource = new ComboPooledDataSource();
+    		dataSource.setUser(user);
+    		dataSource.setPassword(pwd);
+    		dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/ssm_crud");
+    		dataSource.setDriverClass(driverClass);
+    		return dataSource;
+    	}
+    	
+    	@Profile("prod")
+    	@Bean("prodDataSource")
+    	public DataSource dataSourceProd(@Value("${db.password}")String pwd) throws Exception{
+    		ComboPooledDataSource dataSource = new ComboPooledDataSource();
+    		dataSource.setUser(user);
+    		dataSource.setPassword(pwd);
+    		dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/scw_0515");
+    		
+    		dataSource.setDriverClass(driverClass);
+    		return dataSource;
+    	}
+    
+    	@Override
+    	public void setEmbeddedValueResolver(StringValueResolver resolver) {
+    		// TODO Auto-generated method stub
+    		this.valueResolver = resolver;
+    		driverClass = valueResolver.resolveStringValue("${db.driverClass}");
+    	}
+    }
+    ```
+
+    - 加了环境标识的bean，只有这个环境被激活的时候才能注册到容器中。默认是default环境
+    - 写在配置类上，只有是指定的环境的时候，整个配置类里面的所有配置才能开始生效
+    - 没有标注环境标识的bean在，任何环境下都是加载的
+
+  - 切换运行环境方式
+
+    1. 使用命令行动态参数: 在虚拟机参数位置加载 -Dspring.profiles.active=test
+
+    2. 代码的方式激活某种环境，如：
+
+       ```java
+       //1、创建一个applicationContext
+       AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+       //2、设置需要激活的环境
+       applicationContext.getEnvironment().setActiveProfiles("dev");
+       //3、注册主配置类
+       applicationContext.register(MainConfigOfProfile.class);
+       //4、启动刷新容器
+       applicationContext.refresh();
+       ```
+
+## AOP
+
+
+
+## 声明式事务
+
