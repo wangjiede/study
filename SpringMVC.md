@@ -895,16 +895,17 @@ org.springframework.web.HttpSessionRequiredException:Session attribute 'user' re
     - 使用HttpMessageConverter\<T>将请求信息或响应结果转化为对应类型的入参或响应信息，提供2种途径
   
     - @RequestBody / @ResponseBody：对处理方法进行标注
-      - HttpEntity \<T> / ResponseEntity \<T> ：作为处理方法的入参或返回值
-
-    - 当处理方法使用到@RequestBody / @ResponseBody或HttpEntity \<T> / ResponseEntity \<T>时，Spring首先根据请求头或响应头的Accept属性选择匹配的HttpMessageConverter，进而根据参数类型或泛型类型的过滤得到相应的HttpMessageConverter，若找不到匹配的HttpMessageConverter将报错。
-
-    - @RequestBody􏰳、@ResponseBody示例：
-
-      <img src="/Users/admin/Documents/study/images/image-20200608212519231.png" alt="image-20200608212519231" style="zoom:40%;" />
-
-    - HttpEntity􏰳、ResponseEntity示例：
-  
+      
+- HttpEntity \<T> / ResponseEntity \<T> ：作为处理方法的入参或返回值
+      
+- 当处理方法使用到@RequestBody / @ResponseBody或HttpEntity \<T> / ResponseEntity \<T>时，Spring首先根据请求头或响应头的Accept属性选择匹配的HttpMessageConverter，进而根据参数类型或泛型类型的过滤得到相应的HttpMessageConverter，若找不到匹配的HttpMessageConverter将报错。
+    
+- @RequestBody􏰳、@ResponseBody示例：
+    
+  <img src="/Users/admin/Documents/study/images/image-20200608212519231.png" alt="image-20200608212519231" style="zoom:40%;" />
+    
+  - HttpEntity􏰳、ResponseEntity示例：
+    
       <img src="/Users/admin/Documents/study/images/image-20200608212632852.png" alt="image-20200608212632852" style="zoom:40%;" />
 
 ## 国际化
