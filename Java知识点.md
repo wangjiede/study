@@ -938,7 +938,7 @@ interface：通常为了定义一个通用的规则，即抽象类抽象到极�
     - 属于java.util包，拥有无参数、带长度、带collection参数构造方法
     - 常用方法：**存**：add()、**取**：get()、**删**：remove()、**改**：set()、**并集**：addAll()、**个数**：size()、**清除**：clear()、**是否存在**：contains()、**确保容量**：ensureCapacity()、**所在位置**：indexOf()、**最后一个所在位置**：lastIndexOf()、**是否为空**：isEmpty()、**迭代器**：iterator()、**差集**：removeAll()、**交集**：retainAll()、**截取List**：subList(int begin,int end)、**转数组**：toArray()
 
-    - 注意：由于ArrayList底层是一个Object[],什么类型都可以存储，取出来就存在多态的效果，需要自己造型，所以出现了泛型：ArrayList<String>
+    - 注意：由于ArrayList底层是一个Object[],什么类型都可以存储，取出来就存在多态的效果，需要自己造型，所以出现了泛型：ArrayList\<String>
 
   - LinkedList
 

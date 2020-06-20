@@ -378,3 +378,7 @@ order by sal
   - @XxxProvider(type=XXX.class(指定类),method=""(指定方法))   
   - @XxxProvider(XXX.class):针对类中的方法名称为：provideSql
 
+## 缓存
+
+
+
